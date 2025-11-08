@@ -1,106 +1,23 @@
-/* ==== Base / frame ====================================================== */
-html, body, #root, .App { height: 100%; margin: 0; padding: 0; }
-body, .App { font-family: "Share Tech Mono", monospace; color: #1a1a1a; }
-
-/* Cyber frame background */
-.app-frame {
-  background: linear-gradient(#d6da12, #c7cd22) fixed;
-  padding: 16px 18px 18px;
-  box-shadow: inset 0 0 0 6px #171a12, inset 0 0 0 8px #2c2f22;
+/* src/App.css */
+body {
+  font-family: Arial, sans-serif;
+  margin: 0;
+  padding: 0;
+  background: #f5f5f5;
 }
 
-/* ==== HUD header ======================================================== */
-.hud {
-  display: grid;
-  grid-template-columns: auto 1fr auto;
-  align-items: end;
-  gap: 16px;
-  margin-bottom: 14px;
-  color: #12252b;
+.App {
+  max-width: 900px;
+  margin: 30px auto;
+  background: white;
+  padding: 20px;
+  border-radius: 10px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
 }
 
-.hud__yearchips { display: flex; gap: 8px; }
-.chip {
-  font-family: "Orbitron", sans-serif;
-  font-weight: 700;
-  background:#1c3d46; color:#bfe8ff;
-  border:3px solid #0e242a;
-  padding: 6px 10px; border-radius: 6px;
-  box-shadow: inset 0 -2px 0 rgba(255,255,255,.12);
-  letter-spacing: 1px;
+h1 {
+  text-align: center;
+  color: #333;
 }
-
-.hud__title { display:flex; align-items:flex-end; gap: 8px; }
-.hud__month {
-  font-family: "Orbitron", sans-serif;
-  font-weight:700; font-size: 42px; letter-spacing: 2px;
-  background:#13333c; color:#dff6ff;
-  padding: 8px 14px; border-radius: 6px;
-  border:3px solid #0e242a;
-  box-shadow: inset 0 -3px 0 rgba(255,255,255,.08);
-}
-.hud__underscore { font-size: 48px; color:#0e242a; }
-
-.hud__meta { display:flex; align-items:center; gap: 10px; }
-.hud__progress { width:160px; height:10px; border:2px solid #0e242a; border-radius: 8px; background:#0e242a; overflow:hidden;}
-.hud__progress .bar { width: 65%; height:100%; background:#4ec3e0; box-shadow: inset 0 -2px 0 rgba(0,0,0,.25); }
-.hud__file { opacity:.9; }
-
-/* ==== FullCalendar: weekday strip ====================================== */
-.fc .fc-col-header {
-  background: #12323b;
-  border: 3px solid #0e242a;
-  border-radius: 8px;
-  overflow: hidden;
-  margin-bottom: 8px;
-}
-.fc-theme-standard th { border: 1px solid #0e242a; }
-.fc-dayHeader-sci { color:#dff6ff; font-family:"Orbitron", sans-serif; letter-spacing:1px; }
-
-/* ==== FullCalendar: grid / day panels ================================== */
-.fc .fc-scrollgrid { border: 3px solid #0e242a; border-radius: 10px; overflow:hidden; }
-.fc-theme-standard td, .fc-theme-standard th { border: 1px solid #2b2b2b; }
-.fc-daygrid-day-frame {
-  background: #f7f7f5;
-  position: relative;
-}
-
-/* panel “tech” corners (simple notches) */
-.fc-daygrid-day-frame::before,
-.fc-daygrid-day-frame::after {
-  content:""; position:absolute; width:14px; height:14px; background:#f7f7f5; border:3px solid #0e242a;
-}
-.fc-daygrid-day-frame::before { top:-3px; left:-3px; border-right:none; border-bottom:none; border-radius:8px 0 0 0; }
-.fc-daygrid-day-frame::after  { bottom:-3px; right:-3px; border-left:none; border-top:none; border-radius:0 0 8px 0; }
-
-/* Today highlight */
-.fc-day-today .fc-daygrid-day-frame { background:#fffad7; }
-
-/* ==== Events: one-line dot • time • title =============================== */
-.fc-daygrid-event {
-  display: flex !important;
-  align-items: center;
-  gap: 6px;
-  white-space: nowrap;
-  overflow: hidden;
-  padding: 2px 4px;
-  height: auto !important;
-  min-height: 20px;
-  border-radius: 6px;
-}
-.fc-daygrid-event-dot { margin: 0 3px 0 0; flex: 0 0 auto; }
-.fc-event-time { font-weight: 700; color:#102329; flex: 0 0 auto; }
-.fc-event-title { flex: 1 1 auto; overflow: hidden; text-overflow: ellipsis; font-size: .95rem; line-height: 1.2em; }
-
-/* spacing between stacked events */
-.fc-daygrid-day-events { margin: 2px 0; }
-
-/* Month title row spacing fix */
-.fc .fc-toolbar.fc-header-toolbar { margin: 0; }
-.fc-toolbar-title {
-  display: none;  /* hides "October 2025" */
-}
-
-
 
 
