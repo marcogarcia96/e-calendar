@@ -1,13 +1,14 @@
 // src/components/WeatherPanel.js
-import React, { useEffect, useState } from "react"
-import "./WeatherPanel.css"; // if your styles live there
+// src/components/WeatherPanel.js
+import React, { useEffect, useState } from "react";
+import "./WeatherPanel.css";
 
-const API_KEY = process.env.REACT_APP_OPENWEATHER_KEY;
+const API_KEY = process.env.REACT_APP_WEATHERAPI_KEY;
 const LAT = process.env.REACT_APP_LAT;
 const LON = process.env.REACT_APP_LON;
 const UNITS = "imperial"; // °F
-console.log(LAT + ' ' + LON + ' ' + UNITS)
-function WeatherPanel() {
+
+function WeatherPanel({ onOpenForecast }) {
   const [weather, setWeather] = useState(null);
   const [error, setError] = useState(null);
 
@@ -32,7 +33,7 @@ function WeatherPanel() {
       const description = (data.weather[0]?.description || "").replace(
         /\b\w/g,
         (c) => c.toUpperCase()
-      ); // "clear sky" -> "Clear Sky"
+      );
       const city = data.name || "Unknown location";
 
       setWeather({ temp, high, low, description, city });
@@ -60,36 +61,41 @@ function WeatherPanel() {
     emoji = "🌫️";
 
   return (
-  <div className="card weather-card">
-    {/* ICON ON TOP */}
-    <div className="weather-icon">
-      <span className="weather-emoji">{emoji}</span>
-    </div>
+    <div
+      className="card weather-card"
+      onClick={onOpenForecast}
+      style={{ cursor: "pointer" }}
+    >
+      {/* ICON ON TOP */}
+      <div className="weather-icon">
+        <span className="weather-emoji">{emoji}</span>
+      </div>
 
-    {/* CITY / LOCATION */}
-    <div className="weather-location">
-      {weather ? weather.city : error ? "Error" : "Loading..."}
-    </div>
+      {/* CITY / LOCATION */}
+      <div className="weather-location">
+        {weather ? weather.city : error ? "Error" : "Loading..."}
+      </div>
 
-    {/* BIG TEMPERATURE */}
-    <div className="weather-temp">
-      {weather ? `${weather.temp}°F` : "--"}
-    </div>
+      {/* BIG TEMPERATURE */}
+      <div className="weather-temp">
+        {weather ? `${weather.temp}°F` : "--"}
+      </div>
 
-    {/* DESCRIPTION */}
-    <div className="weather-description">
-      {weather ? weather.description : error || ""}
-    </div>
+      {/* DESCRIPTION */}
+      <div className="weather-description">
+        {weather ? weather.description : error || ""}
+      </div>
 
-    {/* HIGH / LOW ROW */}
-    <div className="weather-hilo">
-      <span>H: {weather ? `${weather.high}°` : "--"}</span>
-      <span>L: {weather ? `${weather.low}°` : "--"}</span>
+      {/* HIGH / LOW ROW */}
+      <div className="weather-hilo">
+        <span>H: {weather ? `${weather.high}°` : "--"}</span>
+        <span>L: {weather ? `${weather.low}°` : "--"}</span>
+      </div>
     </div>
-  </div>
-);
+  );
 }
 
 export default WeatherPanel;
+
 
 

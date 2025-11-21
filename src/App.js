@@ -3,6 +3,7 @@ import React, { useEffect, useState, useMemo } from "react";
 import ical from "ical.js";
 
 import WeatherPanel from "./components/WeatherPanel";
+import ForecastOverlay from "./components/ForecastOverlay";
 import CalendarPanel from "./components/CalendarPanel";
 import NotesPanel from "./components/NotesPanel";
 import TodoPanel from "./components/TodoPanel";
@@ -11,6 +12,7 @@ import "./App.css";
 
 export default function App() {
   const [events, setEvents] = useState([]);
+  const [isForecastOpen, setIsForecastOpen] = useState(false);
 
   // Collect ICS URLs from .env
   const icsUrls = useMemo(() => {
@@ -76,14 +78,20 @@ export default function App() {
             <CalendarPanel events={events} />
           </div>
 
-          {/* RIGHT: Weather, Notes, To-Do (equal height) */}
+          {/* RIGHT: Weather, Notes, To-Do */}
           <div className="side-column">
-            <WeatherPanel />
+            <WeatherPanel onOpenForecast={() => setIsForecastOpen(true)} />
             <NotesPanel />
             <TodoPanel />
           </div>
         </div>
       </div>
+
+      {/* 🔹 Overlay rendered on top of everything */}
+      {isForecastOpen && (
+        <ForecastOverlay onClose={() => setIsForecastOpen(false)} />
+      )}
     </div>
   );
 }
+
