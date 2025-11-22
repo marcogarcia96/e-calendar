@@ -121,8 +121,8 @@ body {
 }
 
 .weather-location {
-  font-size: 0.95rem;
-  color: #555;
+  font-size: 1rem;
+  color: white;
 }
 
 .weather-right {
@@ -239,7 +239,7 @@ body {
   .weather-right,
   .notes-textarea,
   .todo-list {
-    font-size: 0.8rem;
+    font-size: 1rem;
   }
 
   .calendar-body .fc-toolbar-title {

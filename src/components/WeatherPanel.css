@@ -25,7 +25,7 @@
 
 /* City name */
 .weather-location {
-  font-size: 1.2rem;
+  font-size: 1rem;
   font-weight: 600;
   margin-bottom: 4px;
 }
@@ -47,10 +47,10 @@
 
 /* High / Low row */
 .weather-hilo {
-  font-size: 0.95rem;
+  font-size: 1rem;
   display: flex;
   gap: 14px;
-  opacity: 0.9;
+  
 }
 
 /* (Optional) loading state if you use it somewhere */
