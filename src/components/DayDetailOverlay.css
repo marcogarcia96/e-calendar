@@ -1,0 +1,88 @@
+/* src/components/DayDetailOverlay.css */
+
+.day-overlay-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 900;
+}
+
+.day-overlay-modal {
+  position: relative; /* so the X is positioned inside */
+  background: #2a2630;
+  color: #ffffff;
+  border-radius: 24px;
+  padding: 24px 28px;
+  width: 90vw;
+  max-width: 900px;
+  height: 80vh;
+  max-height: 600px;
+  box-sizing: border-box;
+  box-shadow: 0 18px 40px rgba(0, 0, 0, 0.25);
+}
+
+/* X button inside the dark modal */
+.day-overlay-close {
+  position: absolute;
+  top: 12px;
+  left: 18px;
+  border: none;
+  background: transparent;
+  color: #ffffff;
+  font-size: 22px;
+  cursor: pointer;
+  line-height: 1;
+}
+
+/* Header: date on the right */
+.day-overlay-header {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.day-overlay-date {
+  font-size: 1.1rem;
+  font-weight: 600;
+}
+
+.day-overlay-divider {
+  height: 1px;
+  background: #444;
+  margin-bottom: 16px;
+}
+
+.day-overlay-body {
+  font-size: 1rem;
+  overflow-y: auto;
+}
+
+/* Event list */
+.day-overlay-event-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.day-overlay-event {
+  margin-bottom: 12px;
+}
+
+.day-overlay-event .event-title {
+  font-weight: 600;
+  margin-bottom: 2px;
+}
+
+.day-overlay-event .event-time {
+  font-size: 0.9rem;
+  opacity: 0.85;
+}
+
+.day-overlay-empty {
+  opacity: 0.85;
+}
+

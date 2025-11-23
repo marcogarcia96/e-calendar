@@ -1,0 +1,61 @@
+/* --------------------------- */
+/* 🔥 DARK MODE CALENDAR THEME */
+/* --------------------------- */
+
+.calendar-card {
+  background: #2a2630 !important;
+  color: #fff !important;
+}
+
+.fc {
+  background: #2a2630 !important;
+  color: #fff !important;
+}
+
+/* Toolbar */
+.fc-toolbar-title {
+  color: #fff !important;
+}
+.fc-button {
+  background: #3a3642 !important;
+  border: none !important;
+  color: #fff !important;
+}
+.fc-button:hover {
+  background: #4a4455 !important;
+}
+
+/* Weekday headers */
+.fc-col-header-cell-cushion {
+  color: #fff !important;
+}
+
+/* Day numbers */
+.fc-daygrid-day-number {
+  color: #fff !important;
+}
+
+/* Day cells */
+.fc-daygrid-day {
+  background: #2a2630 !important;
+  border-color: #3d3944 !important;
+}
+
+/* Today highlight */
+.fc-day-today {
+  background: #3a3440 !important;
+}
+
+/* Events */
+.fc-daygrid-event {
+  background: #4b8dd8 !important;
+  border-radius: 6px;
+  border: none !important;
+  color: #fff !important;
+}
+.fc-daygrid-event > .fc-event-main {
+  color: #fff !important;
+}
+.fc-daygrid-more-link {
+  color: #fff !important;
+}

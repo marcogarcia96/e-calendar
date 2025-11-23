@@ -1,6 +1,6 @@
 .weather-card {
   width: 100%;
-  background: #4b8dd8;
+  background: #2a2630;
   color: white;
   padding: 18px;
   border-radius: 22px;
@@ -11,7 +11,7 @@
   box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
 }
 .card.weather-card {
-  background: #4b8dd8;
+  background: #2a2630;
 }
 
 /* Icon on top */

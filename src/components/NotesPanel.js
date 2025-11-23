@@ -1,57 +1,79 @@
 // src/components/NotesPanel.js
-import React, { useState } from "react";
-import "./NotesOverlay.css"; // styles for the full-screen editor
+import React, { useEffect, useState } from "react";
+import "./NotesOverlay.css"; // for modal
+import "./NotesPanel.css";   // for panel styling
 
 import NotesOverlay from "./NotesOverlay";
 
 export default function NotesPanel() {
-  // simple in-memory notes – you can later replace with localStorage / DB
-  const [notes, setNotes] = useState([
-    { id: 1, title: "Class notes", body: "" },
-    { id: 2, title: "Passwords", body: "" },
-    { id: 3, title: "Job notes", body: "" },
-  ]);
-
-  const [activeNote, setActiveNote] = useState(null); // {id,title,body} or null
+  const [notes, setNotes] = useState([]);
+  const [activeNote, setActiveNote] = useState(null);
   const [isOverlayOpen, setIsOverlayOpen] = useState(false);
 
+  // Load notes from SQLite
+  const loadNotes = async () => {
+    try {
+      if (!window.notesAPI) {
+        console.error("notesAPI is not available (Electron preload not loaded)");
+        return;
+      }
+      const rows = await window.notesAPI.list(); // [{id, title, updated_at}, ...]
+      setNotes(rows);
+    } catch (err) {
+      console.error("Failed to load notes:", err);
+    }
+  };
+
+  useEffect(() => {
+    loadNotes();
+  }, []);
+
+  // Open blank note (for +)
   const openNewNote = () => {
-    setActiveNote({ id: null, title: "", body: "" }); // blank slate
+    setActiveNote({ id: null, title: "", body: "" });
     setIsOverlayOpen(true);
   };
 
-  const openExistingNote = (note) => {
-    setActiveNote(note);
-    setIsOverlayOpen(true);
+  // Open existing note (need to fetch full body from DB)
+  const openExistingNote = async (id) => {
+    try {
+      const full = await window.notesAPI.get(id);
+      if (full) {
+        setActiveNote({
+          id: full.id,
+          title: full.title,
+          body: full.body,
+        });
+        setIsOverlayOpen(true);
+      }
+    } catch (err) {
+      console.error("Failed to load note:", err);
+    }
   };
 
-  const handleSave = (updatedNote) => {
-    if (!updatedNote.title.trim() && !updatedNote.body.trim()) {
-      // nothing typed – just close without saving
+  // Save handler from overlay
+  const handleSave = async (note) => {
+    try {
+      const savedId = await window.notesAPI.save(note);
+      // reload list so titles are up-to-date
+      await loadNotes();
       setIsOverlayOpen(false);
       setActiveNote(null);
-      return;
+    } catch (err) {
+      console.error("Failed to save note:", err);
     }
-
-    if (updatedNote.id == null) {
-      // new note
-      const newNote = { ...updatedNote, id: Date.now() };
-      setNotes((prev) => [...prev, newNote]);
-    } else {
-      // edit existing
-      setNotes((prev) =>
-        prev.map((n) => (n.id === updatedNote.id ? updatedNote : n))
-      );
-    }
-
-    setIsOverlayOpen(false);
-    setActiveNote(null);
   };
 
-  const handleDelete = (id) => {
-    setNotes((prev) => prev.filter((n) => n.id !== id));
-    setIsOverlayOpen(false);
-    setActiveNote(null);
+  // Delete handler from overlay
+  const handleDelete = async (id) => {
+    try {
+      await window.notesAPI.delete(id);
+      await loadNotes();
+      setIsOverlayOpen(false);
+      setActiveNote(null);
+    } catch (err) {
+      console.error("Failed to delete note:", err);
+    }
   };
 
   const handleCancel = () => {
@@ -62,9 +84,9 @@ export default function NotesPanel() {
   return (
     <>
       <div className="card notes-card">
-        {/* top bar: NOTES + plus button + underline */}
+        {/* Header row: NOTES + plus button + line */}
         <div className="notes-header-row">
-          <div className="notes-title-text">NOTES</div>
+          <div className="notes-title-text">NotePad++ </div>
           <button
             className="notes-add-btn"
             type="button"
@@ -75,7 +97,7 @@ export default function NotesPanel() {
         </div>
         <div className="notes-header-line" />
 
-        {/* list of note “pills” */}
+        {/* List of note titles on main dashboard */}
         <div className="notes-list">
           {notes.length === 0 && (
             <div className="notes-empty">No notes yet</div>
@@ -86,7 +108,7 @@ export default function NotesPanel() {
               key={note.id}
               type="button"
               className="note-pill"
-              onClick={() => openExistingNote(note)}
+              onClick={() => openExistingNote(note.id)}
             >
               {note.title || "Untitled note"}
             </button>
@@ -94,7 +116,7 @@ export default function NotesPanel() {
         </div>
       </div>
 
-      {/* full-screen editor overlay */}
+      {/* Full-screen notes editor overlay */}
       <NotesOverlay
         isOpen={isOverlayOpen}
         initialNote={activeNote}

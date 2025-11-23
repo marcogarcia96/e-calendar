@@ -2,10 +2,18 @@
 import React, { useEffect, useState, useMemo } from "react";
 import FullCalendar from "@fullcalendar/react";
 import dayGridPlugin from "@fullcalendar/daygrid";
+import interactionPlugin from "@fullcalendar/interaction";
 import ical from "ical.js";
+import "./CalendarPanel.css";
+
+import DayDetailOverlay from "./DayDetailOverlay";
 
 export default function CalendarPanel() {
   const [events, setEvents] = useState([]);
+
+  const [overlayVisible, setOverlayVisible] = useState(false);
+  const [selectedDate, setSelectedDate] = useState(null);
+  const [selectedEvents, setSelectedEvents] = useState([]);
 
   // Collect ICS URLs from .env
   const icsUrls = useMemo(() => {
@@ -62,18 +70,46 @@ export default function CalendarPanel() {
     loadEvents();
   }, [icsUrls]);
 
+  // When a day box is clicked
+  const handleDateClick = (info) => {
+    const clickedDate = info.date;     // JS Date
+    const iso = info.dateStr;         // "YYYY-MM-DD"
+
+    const todaysEvents = events.filter((evt) => {
+      const d = evt.start;
+      const y = d.getFullYear();
+      const m = String(d.getMonth() + 1).padStart(2, "0");
+      const da = String(d.getDate()).padStart(2, "0");
+      return `${y}-${m}-${da}` === iso;
+    });
+
+    setSelectedDate(clickedDate);
+    setSelectedEvents(todaysEvents);
+    setOverlayVisible(true);
+  };
+
   return (
     <div className="card calendar-card">
-      
       <div className="calendar-body">
         <FullCalendar
-          plugins={[dayGridPlugin]}
+          plugins={[dayGridPlugin, interactionPlugin]}
           initialView="dayGridMonth"
           events={events}
           height="100%"
           expandRows={true}
+          dateClick={handleDateClick}
         />
       </div>
+
+      <DayDetailOverlay
+        visible={overlayVisible}
+        date={selectedDate}
+        events={selectedEvents}
+        onClose={() => setOverlayVisible(false)}
+      />
     </div>
   );
 }
+
+
+

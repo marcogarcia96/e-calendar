@@ -33,7 +33,7 @@ body {
   width: 100%;
   height: 100%;
   max-width: none;           /* remove 1300px limit */
-  background: #2A2630;
+  background: #3C3C3C;
   border-radius: 0;          /* no rounded outer corners */
   box-shadow: none;          /* no floating-card shadow */
   padding: 8px;              /* small interior padding for breathing room */
@@ -179,7 +179,6 @@ body {
   height: 100% !important;
   overflow: visible !important;
 }
-/* ---- Notes + To-Do ---- */
 
 
 
@@ -189,6 +188,7 @@ body {
   display: flex;
   flex-direction: column;
   box-sizing: border-box;
+  background-color: #2a2630;
 }
 
 /* “NOTES” + plus button row */
@@ -202,6 +202,7 @@ body {
 .notes-title-text {
   font-weight: 600;
   font-size: 1rem;
+  color: #ffffff;
 }
 
 /* the plus button in the top-right */
@@ -228,17 +229,21 @@ body {
   flex-direction: column;
   gap: 8px;
   width: 100%;
+  background-color: #2a2630;
 }
 
 .note-pill {
   width: 100%;
   text-align: left;
   border-radius: 999px;
-  border: 1px solid #d0d0d0;
   padding: 8px 14px;
-  background: #ffffff;
+  background: #4b8dd8 ;
   cursor: pointer;
-  font-size: 0.9rem;
+  font-size: 1.2rem;
+  color: #ffffff;
+  white-space: nowrap;        /* keep text on one line */
+  overflow: hidden;           /* hide anything that doesn't fit */
+  text-overflow: ellipsis;    /* add … when too long */
 }
 
 .note-pill:hover {
@@ -279,6 +284,10 @@ body {
     padding: 8px 10px;
     box-shadow: 0 2px 6px rgba(0, 0, 0, 0.12);
   }
+
+  .side-column {
+  max-width: 156px;
+}
 
   .weather-temp {
     font-size: 1.2rem;

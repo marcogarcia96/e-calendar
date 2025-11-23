@@ -9,17 +9,14 @@ export default function NotesOverlay({
   onDelete,
   onCancel,
 }) {
-  // ✅ Hooks must always be called, even if we later return null
   const [title, setTitle] = useState(initialNote?.title || "");
   const [body, setBody] = useState(initialNote?.body || "");
 
-  // when the note being edited changes, update local state
   useEffect(() => {
     setTitle(initialNote?.title || "");
     setBody(initialNote?.body || "");
   }, [initialNote]);
 
-  // if overlay should not be visible, render nothing
   if (!isOpen || !initialNote) return null;
 
   const isExisting = initialNote.id != null;
@@ -38,13 +35,11 @@ export default function NotesOverlay({
     }
   };
 
-
-
+  const stop = (e) => e.stopPropagation();
 
   return (
-    <div className="notes-overlay" >
-      <div className="notes-modal" >
-        {/* Title row */}
+    <div className="notes-overlay" onClick={onCancel}>
+      <div className="notes-modal" onClick={stop}>
         <div className="notes-modal-header">
           <input
             className="notes-modal-title-input"
@@ -55,7 +50,6 @@ export default function NotesOverlay({
         </div>
         <div className="notes-modal-divider" />
 
-        {/* body textarea */}
         <textarea
           className="notes-modal-textarea"
           placeholder="Notes"
@@ -63,7 +57,6 @@ export default function NotesOverlay({
           onChange={(e) => setBody(e.target.value)}
         />
 
-        {/* buttons row */}
         <div className="notes-modal-actions">
           <div className="notes-modal-actions-left">
             {isExisting && (

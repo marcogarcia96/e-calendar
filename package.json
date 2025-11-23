@@ -13,6 +13,7 @@
     "@testing-library/jest-dom": "^6.8.0",
     "@testing-library/react": "^16.3.0",
     "@testing-library/user-event": "^13.5.0",
+    "better-sqlite3": "^12.4.6",
     "gapi-script": "^1.2.0",
     "ical.js": "^2.2.1",
     "node-fetch": "^3.3.2",
@@ -26,7 +27,8 @@
     "build": "react-scripts build",
     "test": "react-scripts test",
     "eject": "react-scripts eject",
-    "electron": "concurrently \"npm start\" \"wait-on http://localhost:3000 && electron .\""
+    "electron": "concurrently \"npm start\" \"wait-on http://localhost:3000 && electron .\"",
+    "postinstall": "electron-rebuild -f -w better-sqlite3"
   },
   "eslintConfig": {
     "extends": [
@@ -49,6 +51,7 @@
   "devDependencies": {
     "concurrently": "^9.2.1",
     "electron": "^38.1.2",
+    "electron-rebuild": "^3.2.9",
     "wait-on": "^9.0.0"
   }
 }
