@@ -183,17 +183,72 @@ body {
 
 
 
+/* ---- Notes panel on the main dashboard ---- */
+
 .notes-card {
   display: flex;
   flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  height: 100%;
+  box-sizing: border-box;
 }
 
+/* “NOTES” + plus button row */
+.notes-header-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px;
+}
 
+.notes-title-text {
+  font-weight: 600;
+  font-size: 1rem;
+}
 
+/* the plus button in the top-right */
+.notes-add-btn {
+  border: none;
+  background: transparent;
+  font-size: 1.5rem;
+  line-height: 1;
+  cursor: pointer;
+  padding: 0 4px;
+}
 
+/* underline under header */
+.notes-header-line {
+  width: 100%;
+  height: 1px;
+  background-color: #d0d0d0;
+  margin-bottom: 12px;
+}
+
+/* list of note “pills” */
+.notes-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  width: 100%;
+}
+
+.note-pill {
+  width: 100%;
+  text-align: left;
+  border-radius: 999px;
+  border: 1px solid #d0d0d0;
+  padding: 8px 14px;
+  background: #ffffff;
+  cursor: pointer;
+  font-size: 0.9rem;
+}
+
+.note-pill:hover {
+  background: #f0f4fb;
+}
+
+.notes-empty {
+  font-size: 0.85rem;
+  color: #777;
+}
 
 .side-column > .weather-card {
   flex: 0 0 auto;   /* fixed height */
