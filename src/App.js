@@ -6,7 +6,7 @@ import WeatherPanel from "./components/WeatherPanel";
 import ForecastOverlay from "./components/ForecastOverlay";
 import CalendarPanel from "./components/CalendarPanel";
 import NotesPanel from "./components/NotesPanel";
-import TodoPanel from "./components/TodoPanel";
+
 
 import "./App.css";
 
@@ -82,7 +82,7 @@ export default function App() {
           <div className="side-column">
             <WeatherPanel onOpenForecast={() => setIsForecastOpen(true)} />
             <NotesPanel />
-            <TodoPanel />
+            
           </div>
         </div>
       </div>

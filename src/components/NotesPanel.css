@@ -1,0 +1,36 @@
+/* Header: Notes left, + button right */
+.notes-header {
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 14px; /* small padding ONLY inside header */
+}
+
+/* Title text */
+.notes-title {
+  font-size: 1.1rem;
+  font-weight: 600;
+}
+
+/* Plus button */
+.notes-add-btn {
+  font-size: 1.6rem;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  line-height: 1;
+}
+
+/* Divider line under header */
+.notes-divider {
+  width: 100%;
+  height: 1.5px;
+  background: #ccc;
+}
+
+/* Your writing area */
+.notes-content {
+  flex: 1;
+}

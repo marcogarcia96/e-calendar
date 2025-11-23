@@ -85,7 +85,7 @@ function ForecastOverlay({ onClose }) {
     <div className="forecast-overlay" onClick={onClose}>
       <div
         className="forecast-modal"
-        onClick={(e) => e.stopPropagation()} // don't close when clicking inside
+         // don't close when clicking inside
       >
         <div className="forecast-header">
           <h2>{process.env.REACT_APP_LOCATION_NAME || "Forecast"}</h2>
