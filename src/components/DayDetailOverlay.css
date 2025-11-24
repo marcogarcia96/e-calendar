@@ -180,3 +180,25 @@
   color: #4b8dd8;
   text-decoration: underline;
 }
+.day-overlay-details {
+  margin-top: 4px;
+}
+
+.day-overlay-textarea {
+  background: #1f1b24;
+  color: #ffffff;
+  border-radius: 12px;
+  border: 1px solid #555;
+  padding: 8px 10px;
+  font-size: 0.95rem;
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
+    sans-serif;
+  width: 100%;
+  min-height: 70px;
+  resize: vertical;
+  box-sizing: border-box;
+}
+
+.day-overlay-textarea::placeholder {
+  color: #bbbbbb;
+}

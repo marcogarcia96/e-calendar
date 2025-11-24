@@ -2,6 +2,44 @@
 <html lang="en">
   <head>
     <meta charset="utf-8" />
+    <meta
+  http-equiv="Content-Security-Policy"
+  content="
+    default-src 'self' data: blob:;
+    
+    script-src
+      'self'
+      'unsafe-inline'
+      'unsafe-eval'
+      https://apis.google.com
+      https://accounts.google.com
+      https://www.gstatic.com
+      data: blob:;
+    
+    connect-src
+      'self'
+      https://www.googleapis.com
+      https://oauth2.googleapis.com
+      https://accounts.google.com
+      https://api.openweathermap.org
+      https://apis.google.com;
+    
+    frame-src
+      https://accounts.google.com
+      https://oauth2.googleapis.com
+      https://content.googleapis.com;
+    
+    img-src
+      'self'
+      data:
+      https:;
+    
+    style-src
+      'self'
+      'unsafe-inline';
+  "
+/>
+
     <link rel="icon" href="%PUBLIC_URL%/favicon.ico" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
 

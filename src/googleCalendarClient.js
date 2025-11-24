@@ -1,126 +1,150 @@
 // src/googleCalendarClient.js
+/* global gapi */
 
-// Read from your .env (remember to restart dev server after editing .env)
+// From your .env
 const CLIENT_ID = process.env.REACT_APP_GOOGLE_CLIENT_ID;
 const API_KEY = process.env.REACT_APP_GOOGLE_API_KEY;
 
-const DISCOVERY_DOC =
-  "https://www.googleapis.com/discovery/v1/apis/calendar/v3/rest";
+const DISCOVERY_DOCS = [
+  "https://www.googleapis.com/discovery/v1/apis/calendar/v3/rest",
+];
 
 const SCOPES = "https://www.googleapis.com/auth/calendar.events";
 
+let gapiInitialized = false;
+let gapiInitPromise = null;
+let gapiLoadPromise = null;
+
 /**
- * Dynamically load the Google API script once.
+ * Load the gapi script once and return window.gapi
  */
-export function loadGapiScript() {
-  return new Promise((resolve, reject) => {
-    if (window.gapi) {
-      resolve();
+function loadGapi() {
+  if (gapiLoadPromise) return gapiLoadPromise;
+
+  gapiLoadPromise = new Promise((resolve, reject) => {
+    // If gapi is already present and has .load, use it
+    if (window.gapi && typeof window.gapi.load === "function") {
+      resolve(window.gapi);
       return;
     }
 
     const script = document.createElement("script");
     script.src = "https://apis.google.com/js/api.js";
     script.async = true;
-    script.onload = () => resolve();
-    script.onerror = () => reject(new Error("Failed to load gapi script"));
+    script.defer = true;
+
+    script.onload = () => {
+      if (window.gapi && typeof window.gapi.load === "function") {
+        resolve(window.gapi);
+      } else {
+        reject(
+          new Error("gapi script loaded but window.gapi.load is not available")
+        );
+      }
+    };
+
+    script.onerror = () => {
+      reject(new Error("Failed to load Google API (gapi) script"));
+    };
+
     document.body.appendChild(script);
   });
+
+  return gapiLoadPromise;
 }
 
 /**
- * Initialize the Google API client with Calendar.
+ * Initialize the gapi client + auth once.
  */
 export async function initGapiClient() {
-  if (!CLIENT_ID || !API_KEY) {
-    console.warn(
-      "[googleCalendarClient] Missing CLIENT_ID or API_KEY in .env (REACT_APP_GOOGLE_CLIENT_ID / REACT_APP_GOOGLE_API_KEY)"
-    );
-  }
+  if (gapiInitialized) return;
+  if (gapiInitPromise) return gapiInitPromise;
 
-  await loadGapiScript();
+  gapiInitPromise = (async () => {
+    const g = await loadGapi();
 
-  return new Promise((resolve, reject) => {
-    window.gapi.load("client:auth2", async () => {
-      try {
-        await window.gapi.client.init({
-          apiKey: API_KEY,
-          clientId: CLIENT_ID,
-          discoveryDocs: [DISCOVERY_DOC],
-          scope: SCOPES,
-        });
-        resolve();
-      } catch (err) {
-        console.error("[googleCalendarClient] gapi.client.init error", err);
-        reject(err);
-      }
+    // ⬇️ THIS is what was missing: actually load "client:auth2"
+    await new Promise((resolve, reject) => {
+      g.load("client:auth2", {
+        callback: resolve,
+        onerror: () => reject(new Error("gapi.load('client:auth2') failed")),
+        timeout: 5000,
+        ontimeout: () =>
+          reject(new Error("gapi.load('client:auth2') timed out")),
+      });
     });
-  });
+
+    // Now g.client exists and we can init safely
+    await g.client.init({
+      apiKey: API_KEY,
+      clientId: CLIENT_ID,
+      discoveryDocs: DISCOVERY_DOCS,
+      scope: SCOPES,
+    });
+
+    const auth = g.auth2.getAuthInstance();
+    if (!auth.isSignedIn.get()) {
+      await auth.signIn();
+    }
+
+    gapiInitialized = true;
+    console.log("[GoogleCalendar] gapi client initialized");
+  })();
+
+  return gapiInitPromise;
 }
 
 /**
- * Ensure the user is signed in; opens Google OAuth popup if needed.
+ * Create a Google Calendar event.
+ * Returns the created event object (with id + htmlLink).
  */
-export async function ensureSignedIn() {
-  const auth = window.gapi.auth2.getAuthInstance();
-  if (!auth) {
-    throw new Error("Google Auth instance not initialized");
-  }
-
-  if (auth.isSignedIn.get()) {
-    return auth.currentUser.get();
-  }
-
-  const user = await auth.signIn();
-  return user;
-}
-
-/**
- * Create an event in the user's primary Google Calendar.
- * Expects JS Date objects for start/end.
- */
-export async function createGoogleCalendarEvent({ title, start, end }) {
-  if (!window.gapi || !window.gapi.client) {
-    await initGapiClient();
-  }
-
-  await ensureSignedIn();
+export async function createGoogleCalendarEvent({
+  title,
+  start,
+  end,
+  location,
+  description,
+}) {
+  await initGapiClient();
+  const g = window.gapi;
 
   const event = {
     summary: title,
-    start: {
-      dateTime: start.toISOString(),
-    },
-    end: {
-      dateTime: end.toISOString(),
-    },
+    start: { dateTime: start.toISOString() },
+    end: { dateTime: end.toISOString() },
   };
 
-  const response = await window.gapi.client.calendar.events.insert({
+  if (location) event.location = location;
+  if (description) event.description = description;
+
+  const response = await g.client.calendar.events.insert({
     calendarId: "primary",
     resource: event,
   });
 
-  return response.result; // contains .id, .htmlLink, etc.
+  // response.result has id, htmlLink…
+  return response.result;
 }
 
 /**
- * Delete an event from the user's primary Google Calendar by eventId.
+ * Delete a Google Calendar event by its ID.
  */
 export async function deleteGoogleCalendarEvent({ eventId }) {
-  if (!eventId) {
-    throw new Error("deleteGoogleCalendarEvent called without eventId");
+  if (!eventId) return;
+
+  await initGapiClient();
+  const g = window.gapi;
+
+  try {
+    await g.client.calendar.events.delete({
+      calendarId: "primary",
+      eventId,
+    });
+    console.log("[GoogleCalendar] Deleted event:", eventId);
+  } catch (err) {
+    console.error("[GoogleCalendar] Failed to delete:", eventId, err);
+    throw err;
   }
-
-  if (!window.gapi || !window.gapi.client) {
-    await initGapiClient();
-  }
-
-  await ensureSignedIn();
-
-  await window.gapi.client.calendar.events.delete({
-    calendarId: "primary",
-    eventId,
-  });
 }
+
 

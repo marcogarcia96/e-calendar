@@ -22,6 +22,8 @@ export default function DayDetailOverlay({
   const [title, setTitle] = useState("");
   const [startTime, setStartTime] = useState("");
   const [endTime, setEndTime] = useState("");
+  const [location, setLocation] = useState("");
+  const [notes, setNotes] = useState("");
 
   // Reset inputs whenever you open the overlay / change day
   useEffect(() => {
@@ -29,6 +31,8 @@ export default function DayDetailOverlay({
       setTitle("");
       setStartTime("");
       setEndTime("");
+      setLocation("");
+      setNotes("");
     }
   }, [visible, date]);
 
@@ -44,13 +48,19 @@ export default function DayDetailOverlay({
       title: title.trim(),
       startTime: startTime || null,
       endTime: endTime || null,
+      location,
+      notes,
     });
 
     // clear inputs after adding
     setTitle("");
     setStartTime("");
     setEndTime("");
+    setLocation("");
+    setNotes("");
   };
+
+  const showDetails = title.trim().length > 0; // only show extra fields once user starts typing
 
   return (
     <div className="day-overlay-backdrop" onClick={onClose}>
@@ -76,61 +86,65 @@ export default function DayDetailOverlay({
         <div className="day-overlay-body">
           {events && events.length > 0 ? (
             <ul className="day-overlay-event-list">
-              {events.map((evt, idx) => (
-                <li key={idx} className="day-overlay-event">
-                  <div className="day-overlay-event-main">
-                    <div className="event-title">{evt.title}</div>
+              {events.map((evt, idx) => {
+                const notesText = (evt.description || evt.notes || "").trim();
+                const locationText = (evt.location || "").trim();
 
-                    {evt.start && (
-                      <div className="event-time">
-                        {evt.start.toLocaleTimeString([], {
-                          hour: "numeric",
-                          minute: "2-digit",
-                        })}
-                        {evt.end &&
-                          " – " +
-                            evt.end.toLocaleTimeString([], {
-                              hour: "numeric",
-                              minute: "2-digit",
-                            })}
-                      </div>
-                    )}
+                return (
+                  <li key={idx} className="day-overlay-event">
+                    <div className="day-overlay-event-main">
+                      <div className="event-title">{evt.title}</div>
 
-                    {evt.location && (
-                      <div className="event-location">
-                        {evt.location}
-                      </div>
-                    )}
+                      {evt.start && (
+                        <div className="event-time">
+                          {evt.start.toLocaleTimeString([], {
+                            hour: "numeric",
+                            minute: "2-digit",
+                          })}
+                          {evt.end &&
+                            " – " +
+                              evt.end.toLocaleTimeString([], {
+                                hour: "numeric",
+                                minute: "2-digit",
+                              })}
+                        </div>
+                      )}
 
-                    {evt.description && (
-                      <div className="event-description">
-                        {evt.description}
-                      </div>
-                    )}
+                      {locationText && (
+                        <div className="event-location">{locationText}</div>
+                      )}
 
-                    {(evt.url || evt.htmlLink) && (
-                      <a
-                        href={evt.url || evt.htmlLink}
-                        target="_blank"
-                        rel="noreferrer"
-                        className="event-link"
+                      {notesText && (
+                        <div className="event-description">
+                          {notesText}
+                        </div>
+                      )}
+
+                      {/* Only show link for events created by this app */}
+                      {evt.googleId && evt.url && (
+                        <a
+                          href={evt.url}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="event-link"
+                        >
+                          Open in Google Calendar
+                        </a>
+                      )}
+                    </div>
+
+                    {onRemoveEvent && (
+                      <button
+                        type="button"
+                        className="day-overlay-event-delete"
+                        onClick={() => onRemoveEvent(evt)}
                       >
-                        Open in Google Calendar
-                      </a>
+                        Delete
+                      </button>
                     )}
-                  </div>
-
-                  {onRemoveEvent && (
-                    <button
-                      type="button"
-                      className="day-overlay-event-delete"
-                      onClick={() => onRemoveEvent(evt)}
-                    >
-                      Delete
-                    </button>
-                  )}
-                </li>
-              ))}
+                  </li>
+                );
+              })}
             </ul>
           ) : (
             <div className="day-overlay-empty">No events for this day.</div>
@@ -176,12 +190,32 @@ export default function DayDetailOverlay({
                 Add
               </button>
             </div>
+
+            {/* Details section appears once title is typed */}
+            {showDetails && (
+              <div className="day-overlay-details">
+                <div className="day-overlay-add-row" style={{ marginTop: 10 }}>
+                  <input
+                    type="text"
+                    className="day-overlay-input"
+                    placeholder="Location (optional)"
+                    value={location}
+                    onChange={(e) => setLocation(e.target.value)}
+                  />
+                </div>
+                <div className="day-overlay-add-row" style={{ marginTop: 8 }}>
+                  <textarea
+                    className="day-overlay-textarea"
+                    placeholder="Notes / description (optional)"
+                    value={notes}
+                    onChange={(e) => setNotes(e.target.value)}
+                  />
+                </div>
+              </div>
+            )}
           </form>
         </div>
       </div>
     </div>
   );
 }
-
-
-
