@@ -14,6 +14,8 @@
 
 /* Toolbar */
 .fc-toolbar-title {
+  font-size: 1.5rem !important;   /* adjust size */
+  font-weight: 700 !important;
   color: #fff !important;
 }
 .fc-button {
@@ -58,4 +60,18 @@
 }
 .fc-daygrid-more-link {
   color: #fff !important;
+}
+
+.fc-currentTime-button {
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  cursor: default;
+  pointer-events: none;
+
+  font-size: 1.3rem;
+  font-weight: 600;
+  color: #ffffff;
+  padding: 0;
+  margin: 0 10px;
 }

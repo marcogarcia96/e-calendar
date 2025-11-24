@@ -5,6 +5,8 @@
   justify-content: space-between;
   align-items: center;
   padding: 10px 14px; /* small padding ONLY inside header */
+  flex-shrink: 0;
+  margin-bottom: 8px;
 }
 
 /* Title text */

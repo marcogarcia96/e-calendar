@@ -11,7 +11,8 @@
 
 /* the main notes editor panel */
 .notes-modal {
-  background: #f5f6f8;
+  background: #2a2630;  /* DARK THEME */
+  color: #ffffff;        /* white text */
   border-radius: 24px;
   width: 90vw;
   max-width: 900px;
@@ -23,7 +24,7 @@
   box-shadow: 0 18px 40px rgba(0, 0, 0, 0.25);
 }
 
-/* title row in modal */
+/* title row */
 .notes-modal-header {
   margin-bottom: 8px;
 }
@@ -33,6 +34,7 @@
   border: none;
   outline: none;
   background: transparent;
+  color: #ffffff;      /* title text white */
   font-size: 1.2rem;
   font-weight: 600;
 }
@@ -41,7 +43,7 @@
 .notes-modal-divider {
   height: 1px;
   width: 100%;
-  background-color: #d0d0d0;
+  background-color: #555;  /* darker divider */
   margin-bottom: 10px;
 }
 
@@ -51,17 +53,26 @@
   resize: none;
   border: none;
   outline: none;
-  background: white;
+
+  background: #1f1b24;       /* DARK input */
+  color: #ffffff;            /* white text */
   border-radius: 12px;
   padding: 12px;
+
   font-size: 0.95rem;
-  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
-    sans-serif;
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+
   box-sizing: border-box;
   overflow-y: auto;
 }
 
-/* buttons row at bottom */
+/* placeholder color */
+.notes-modal-textarea::placeholder,
+.notes-modal-title-input::placeholder {
+  color: #bbbbbb;
+}
+
+/* buttons row */
 .notes-modal-actions {
   display: flex;
   justify-content: space-between;
@@ -69,11 +80,7 @@
   margin-top: 12px;
 }
 
-.notes-modal-actions-left {
-  display: flex;
-  gap: 8px;
-}
-
+.notes-modal-actions-left,
 .notes-modal-actions-right {
   display: flex;
   gap: 8px;
@@ -86,19 +93,23 @@
   font-size: 0.9rem;
   border: none;
   cursor: pointer;
+  transition: 0.2s;
 }
 
+/* Save button (Primary) */
 .notes-btn-primary {
-  background: #4b8dd8;
+  background: #4b8dd8;   /* your blue */
   color: #fff;
 }
 
+/* Cancel button (Secondary) */
 .notes-btn-secondary {
-  background: #e0e0e0;
-  color: #333;
+  background: #555;      /* dark gray */
+  color: #ffffff;
 }
 
+/* Delete button (Danger) */
 .notes-btn-danger {
-  background: #e15b5b;
+  background: #b64545;   /* darker red to match theme */
   color: #fff;
 }

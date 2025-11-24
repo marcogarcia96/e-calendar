@@ -15,6 +15,25 @@ export default function CalendarPanel() {
   const [selectedDate, setSelectedDate] = useState(null);
   const [selectedEvents, setSelectedEvents] = useState([]);
 
+  // ⏰ current time for toolbar
+  const [currentTime, setCurrentTime] = useState("");
+
+  // keep the current time updated
+  useEffect(() => {
+    function updateClock() {
+      setCurrentTime(
+        new Date().toLocaleTimeString([], {
+          hour: "numeric",
+          minute: "2-digit",
+        })
+      );
+    }
+
+    updateClock(); // set immediately on mount
+    const interval = setInterval(updateClock, 60 * 1000); // every minute
+    return () => clearInterval(interval);
+  }, []);
+
   // Collect ICS URLs from .env
   const icsUrls = useMemo(() => {
     const urls = [];
@@ -72,8 +91,8 @@ export default function CalendarPanel() {
 
   // When a day box is clicked
   const handleDateClick = (info) => {
-    const clickedDate = info.date;     // JS Date
-    const iso = info.dateStr;         // "YYYY-MM-DD"
+    const clickedDate = info.date; // JS Date
+    const iso = info.dateStr; // "YYYY-MM-DD"
 
     const todaysEvents = events.filter((evt) => {
       const d = evt.start;
@@ -98,6 +117,17 @@ export default function CalendarPanel() {
           height="100%"
           expandRows={true}
           dateClick={handleDateClick}
+          headerToolbar={{
+            left: "title",
+            center: "currentTime",        // ⬅ time in the middle
+            right: "today prev,next",
+          }}
+          customButtons={{
+            currentTime: {
+              text: currentTime,          // ⬅ live time text
+              click: () => {},            // no-op, just display
+            },
+          }}
         />
       </div>
 
@@ -110,6 +140,3 @@ export default function CalendarPanel() {
     </div>
   );
 }
-
-
-
