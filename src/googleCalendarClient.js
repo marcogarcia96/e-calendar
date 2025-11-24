@@ -186,7 +186,6 @@ async function ensureAccessToken() {
       }
 
       // First time: prompt=consent.
-      // Later you can switch to prompt: 'none' if you want silent refresh behaviour.
       tokenClient.requestAccessToken({ prompt: "consent" });
     } catch (err) {
       accessTokenPromise = null;
@@ -225,8 +224,7 @@ export async function createGoogleCalendarEvent({
     resource: event,
   });
 
-  // response.result contains the calendar event with id, htmlLink, etc.
-  
+  console.log("[GoogleCalendar] Created event:", response.result);
   return response.result;
 }
 
@@ -244,11 +242,53 @@ export async function deleteGoogleCalendarEvent({ eventId }) {
       calendarId: "primary",
       eventId,
     });
-    
+    console.log("[GoogleCalendar] Deleted event:", eventId);
   } catch (err) {
     console.error("[GoogleCalendar] Failed to delete:", eventId, err);
     throw err;
   }
+}
+
+/**
+ * 🆕 ADDED THIS FUNCTION
+ * Fetch upcoming events directly from Google Calendar API.
+ * This provides the real 'id' needed for deletion.
+ */
+export async function listGoogleCalendarEvents() {
+  await ensureAccessToken();
+  const g = window.gapi;
+
+  // Calculate time range (e.g., from 1 month ago to future)
+  const timeMin = new Date();
+  timeMin.setMonth(timeMin.getMonth() - 1);
+
+  const response = await g.client.calendar.events.list({
+    calendarId: "primary",
+    timeMin: timeMin.toISOString(),
+    showDeleted: false,
+    singleEvents: true,
+    maxResults: 250,
+    orderBy: "startTime",
+  });
+
+  const items = response.result.items || [];
+
+  return items.map((item) => {
+    // Handle all-day events (date) vs timed events (dateTime)
+    const start = item.start.dateTime || item.start.date;
+    const end = item.end.dateTime || item.end.date;
+
+    return {
+      title: item.summary || "No Title",
+      start: new Date(start),
+      end: new Date(end),
+      location: item.location,
+      description: item.description,
+      // We now save the ID so we can delete it later
+      googleId: item.id,
+      url: item.htmlLink,
+    };
+  });
 }
 
 
