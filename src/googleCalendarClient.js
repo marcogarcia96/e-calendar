@@ -1,7 +1,10 @@
 // src/googleCalendarClient.js
+
+// NOTE: This version uses **Google Identity Services (GIS)**
+// instead of the deprecated gapi.auth2 flow.
+
 /* global gapi */
 
-// From your .env
 const CLIENT_ID = process.env.REACT_APP_GOOGLE_CLIENT_ID;
 const API_KEY = process.env.REACT_APP_GOOGLE_API_KEY;
 
@@ -9,20 +12,26 @@ const DISCOVERY_DOCS = [
   "https://www.googleapis.com/discovery/v1/apis/calendar/v3/rest",
 ];
 
+// Scope: read/write events on your calendar
 const SCOPES = "https://www.googleapis.com/auth/calendar.events";
 
-let gapiInitialized = false;
+let gapiLoaded = false;
 let gapiInitPromise = null;
-let gapiLoadPromise = null;
+let gapiScriptPromise = null;
+
+let gisLoaded = false;
+let gisScriptPromise = null;
+let tokenClient = null;
+let accessToken = null;
+let accessTokenPromise = null;
 
 /**
- * Load the gapi script once and return window.gapi
+ * Load the Google API script (gapi) once.
  */
-function loadGapi() {
-  if (gapiLoadPromise) return gapiLoadPromise;
+function loadGapiScript() {
+  if (gapiScriptPromise) return gapiScriptPromise;
 
-  gapiLoadPromise = new Promise((resolve, reject) => {
-    // If gapi is already present and has .load, use it
+  gapiScriptPromise = new Promise((resolve, reject) => {
     if (window.gapi && typeof window.gapi.load === "function") {
       resolve(window.gapi);
       return;
@@ -38,7 +47,7 @@ function loadGapi() {
         resolve(window.gapi);
       } else {
         reject(
-          new Error("gapi script loaded but window.gapi.load is not available")
+          new Error("gapi script loaded, but window.gapi.load is not available")
         );
       }
     };
@@ -50,48 +59,142 @@ function loadGapi() {
     document.body.appendChild(script);
   });
 
-  return gapiLoadPromise;
+  return gapiScriptPromise;
 }
 
 /**
- * Initialize the gapi client + auth once.
+ * Load the Google Identity Services script (GIS) once.
+ */
+function loadGisScript() {
+  if (gisScriptPromise) return gisScriptPromise;
+
+  gisScriptPromise = new Promise((resolve, reject) => {
+    if (
+      window.google &&
+      window.google.accounts &&
+      window.google.accounts.oauth2
+    ) {
+      gisLoaded = true;
+      resolve(window.google.accounts.oauth2);
+      return;
+    }
+
+    const script = document.createElement("script");
+    script.src = "https://accounts.google.com/gsi/client";
+    script.async = true;
+    script.defer = true;
+
+    script.onload = () => {
+      if (
+        window.google &&
+        window.google.accounts &&
+        window.google.accounts.oauth2
+      ) {
+        gisLoaded = true;
+        resolve(window.google.accounts.oauth2);
+      } else {
+        reject(
+          new Error(
+            "GIS script loaded, but window.google.accounts.oauth2 is not available"
+          )
+        );
+      }
+    };
+
+    script.onerror = () => {
+      reject(new Error("Failed to load Google Identity Services script"));
+    };
+
+    document.body.appendChild(script);
+  });
+
+  return gisScriptPromise;
+}
+
+/**
+ * Initialize the gapi client (Calendar discovery).
+ * No auth here, just API key + discovery docs.
  */
 export async function initGapiClient() {
-  if (gapiInitialized) return;
+  if (gapiLoaded) return;
   if (gapiInitPromise) return gapiInitPromise;
 
   gapiInitPromise = (async () => {
-    const g = await loadGapi();
+    const g = await loadGapiScript();
 
-    // ⬇️ THIS is what was missing: actually load "client:auth2"
+    // Load the 'client' module
     await new Promise((resolve, reject) => {
-      g.load("client:auth2", {
+      g.load("client", {
         callback: resolve,
-        onerror: () => reject(new Error("gapi.load('client:auth2') failed")),
+        onerror: () => reject(new Error("gapi.load('client') failed")),
         timeout: 5000,
-        ontimeout: () =>
-          reject(new Error("gapi.load('client:auth2') timed out")),
+        ontimeout: () => reject(new Error("gapi.load('client') timed out")),
       });
     });
 
-    // Now g.client exists and we can init safely
     await g.client.init({
       apiKey: API_KEY,
-      clientId: CLIENT_ID,
       discoveryDocs: DISCOVERY_DOCS,
-      scope: SCOPES,
+      // ⚠️ no clientId / scope here – auth handled by GIS
     });
 
-    const auth = g.auth2.getAuthInstance();
-    if (!auth.isSignedIn.get()) {
-      await auth.signIn();
-    }
-
-    gapiInitialized = true;
-    console.log("[GoogleCalendar] gapi client initialized");
+    gapiLoaded = true;
+    console.log("[GoogleCalendar] gapi client initialized (no auth yet)");
   })();
 
   return gapiInitPromise;
+}
+
+/**
+ * Ensure we have a valid access token using GIS.
+ * This handles sign-in/consent and sets the token on gapi.client.
+ */
+async function ensureAccessToken() {
+  await initGapiClient();
+  await loadGisScript();
+
+  if (accessToken) {
+    // We have a token already; in a real app you'd check expiry.
+    return accessToken;
+  }
+
+  if (accessTokenPromise) {
+    return accessTokenPromise;
+  }
+
+  accessTokenPromise = new Promise((resolve, reject) => {
+    try {
+      if (!tokenClient) {
+        tokenClient = window.google.accounts.oauth2.initTokenClient({
+          client_id: CLIENT_ID,
+          scope: SCOPES,
+          callback: (tokenResponse) => {
+            if (tokenResponse && tokenResponse.access_token) {
+              accessToken = tokenResponse.access_token;
+              if (window.gapi && window.gapi.client) {
+                window.gapi.client.setToken({ access_token: accessToken });
+              }
+              console.log("[GoogleCalendar] GIS token acquired");
+              accessTokenPromise = null;
+              resolve(accessToken);
+            } else {
+              accessTokenPromise = null;
+              reject(new Error("No access token in GIS response"));
+            }
+          },
+        });
+      }
+
+      // First time: prompt=consent.
+      // Later you can switch to prompt: 'none' if you want silent refresh behaviour.
+      tokenClient.requestAccessToken({ prompt: "consent" });
+    } catch (err) {
+      accessTokenPromise = null;
+      reject(err);
+    }
+  });
+
+  return accessTokenPromise;
 }
 
 /**
@@ -105,7 +208,7 @@ export async function createGoogleCalendarEvent({
   location,
   description,
 }) {
-  await initGapiClient();
+  await ensureAccessToken();
   const g = window.gapi;
 
   const event = {
@@ -122,7 +225,8 @@ export async function createGoogleCalendarEvent({
     resource: event,
   });
 
-  // response.result has id, htmlLink…
+  // response.result contains the calendar event with id, htmlLink, etc.
+  
   return response.result;
 }
 
@@ -132,7 +236,7 @@ export async function createGoogleCalendarEvent({
 export async function deleteGoogleCalendarEvent({ eventId }) {
   if (!eventId) return;
 
-  await initGapiClient();
+  await ensureAccessToken();
   const g = window.gapi;
 
   try {
@@ -140,7 +244,7 @@ export async function deleteGoogleCalendarEvent({ eventId }) {
       calendarId: "primary",
       eventId,
     });
-    console.log("[GoogleCalendar] Deleted event:", eventId);
+    
   } catch (err) {
     console.error("[GoogleCalendar] Failed to delete:", eventId, err);
     throw err;
