@@ -11,16 +11,19 @@
   z-index: 999; /* Above everything else */
 }
 
-/* Center panel that holds the cards */
 .forecast-modal {
-  background: #3C3C3C;
+  background: #2a2630;
   border-radius: 24px;
   padding: 24px 28px;
   max-width: 900px;
   width: 90vw;
   box-shadow: 0 18px 40px rgba(0, 0, 0, 0.25);
   box-sizing: border-box;
+  
+  outline: 1px solid var(--fc-border-color);  /* ⬅️ does NOT resize box */
+  outline-offset: -1px;                        /* puts it inside */
 }
+
 
 /* Title + subtitle */
 .forecast-header {
@@ -45,6 +48,7 @@
   flex-wrap: wrap;
   gap: 16px;
   justify-content: center;
+  
 }
 
 /* Individual forecast card */
@@ -59,6 +63,7 @@
   display: flex;
   flex-direction: column;
   align-items: center;
+  border: 1px solid var(--fc-border-color);
 }
 
 .forecast-day {

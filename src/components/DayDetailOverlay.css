@@ -22,6 +22,7 @@
   max-height: 600px;
   box-sizing: border-box;
   box-shadow: 0 18px 40px rgba(0, 0, 0, 0.25);
+  outline: 1px solid var(--fc-border-color);
 }
 
 /* X button inside the dark modal */
