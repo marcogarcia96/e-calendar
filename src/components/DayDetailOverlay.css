@@ -68,8 +68,17 @@
   margin: 0;
 }
 
+/* each event row */
 .day-overlay-event {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
   margin-bottom: 12px;
+}
+
+.day-overlay-event-main {
+  display: flex;
+  flex-direction: column;
 }
 
 .day-overlay-event .event-title {
@@ -86,3 +95,88 @@
   opacity: 0.85;
 }
 
+/* delete button for events */
+.day-overlay-event-delete {
+  border: none;
+  border-radius: 999px;
+  padding: 6px 12px;
+  background: #b64545;
+  color: #fff;
+  cursor: pointer;
+  font-size: 0.85rem;
+}
+
+.day-overlay-event-delete:hover {
+  filter: brightness(1.1);
+}
+
+/* ----- Add-event form styles ----- */
+
+.day-overlay-add-form {
+  margin-top: 4px;
+}
+
+.day-overlay-add-row {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.day-overlay-input {
+  background: #1f1b24;
+  color: #ffffff;
+  border-radius: 12px;
+  border: 1px solid #555;
+  padding: 8px 10px;
+  font-size: 0.95rem;
+  flex: 1;
+}
+
+.day-overlay-input::placeholder {
+  color: #bbbbbb;
+}
+
+.day-overlay-input-time {
+  max-width: 120px;
+  flex: 0 0 auto;
+}
+
+.day-overlay-add-button {
+  border: none;
+  border-radius: 999px;
+  padding: 8px 14px;
+  background: #4b8dd8;
+  color: #fff;
+  cursor: pointer;
+  font-size: 0.9rem;
+}
+
+.day-overlay-add-button:hover {
+  filter: brightness(1.05);
+}
+
+.day-overlay-time-separator {
+  color: #bbbbbb;
+  font-size: 1.1rem;
+  margin: 0 4px;
+  user-select: none;
+}
+.event-location {
+  font-size: 0.9rem;
+  opacity: 0.9;
+  margin-top: 2px;
+}
+
+.event-description {
+  font-size: 0.9rem;
+  opacity: 0.85;
+  margin-top: 2px;
+  white-space: pre-line; /* respect newlines from Google description */
+}
+
+.event-link {
+  font-size: 0.85rem;
+  margin-top: 4px;
+  color: #4b8dd8;
+  text-decoration: underline;
+}

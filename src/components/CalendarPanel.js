@@ -7,6 +7,11 @@ import ical from "ical.js";
 import "./CalendarPanel.css";
 
 import DayDetailOverlay from "./DayDetailOverlay";
+import {
+  initGapiClient,
+  createGoogleCalendarEvent,
+  deleteGoogleCalendarEvent,
+} from "../googleCalendarClient";
 
 export default function CalendarPanel() {
   const [events, setEvents] = useState([]);
@@ -18,7 +23,7 @@ export default function CalendarPanel() {
   // ⏰ current time for toolbar
   const [currentTime, setCurrentTime] = useState("");
 
-  // keep the current time updated
+  // clock
   useEffect(() => {
     function updateClock() {
       setCurrentTime(
@@ -29,9 +34,16 @@ export default function CalendarPanel() {
       );
     }
 
-    updateClock(); // set immediately on mount
-    const interval = setInterval(updateClock, 60 * 1000); // every minute
+    updateClock();
+    const interval = setInterval(updateClock, 60 * 1000);
     return () => clearInterval(interval);
+  }, []);
+
+  // optional: initialize gapi client once on mount (lazy init also works)
+  useEffect(() => {
+    initGapiClient().catch((err) =>
+      console.error("Failed to init Google Calendar client:", err)
+    );
   }, []);
 
   // Collect ICS URLs from .env
@@ -71,10 +83,15 @@ export default function CalendarPanel() {
 
           vevents.forEach((ve) => {
             const event = new ical.Event(ve);
+
             allEvents.push({
               title: event.summary || "Untitled Event",
               start: event.startDate.toJSDate(),
               end: event.endDate?.toJSDate(),
+              location: event.location || "",
+              description: event.description || "",
+              url: ve.getFirstPropertyValue("url") || null,
+              googleId: null, // ICS events won't have our Google ID
             });
           });
         }
@@ -107,6 +124,89 @@ export default function CalendarPanel() {
     setOverlayVisible(true);
   };
 
+  // 🔹 called from DayDetailOverlay when user adds an event
+  const handleAddEventFromOverlay = async ({ title, startTime, endTime }) => {
+    if (!selectedDate || !title.trim()) return;
+
+    // Base date
+    const start = new Date(selectedDate);
+
+    // Apply chosen start time or default 9:00
+    if (startTime) {
+      const [h, m] = startTime.split(":");
+      start.setHours(Number(h), Number(m), 0, 0);
+    } else {
+      start.setHours(9, 0, 0, 0); // default 9am
+    }
+
+    // Compute end
+    let end = new Date(start);
+
+    if (endTime) {
+      const [eh, em] = endTime.split(":");
+      end.setHours(Number(eh), Number(em), 0, 0);
+
+      // if end <= start, bump 1 hour to avoid weird ranges
+      if (end <= start) {
+        end = new Date(start.getTime() + 60 * 60 * 1000);
+      }
+    } else {
+      // no end time: default 1 hour long
+      end = new Date(start.getTime() + 60 * 60 * 1000);
+    }
+
+    let googleId = null;
+    let htmlLink = null;
+
+    // 1) Try to create the event in Google Calendar first
+    try {
+      const created = await createGoogleCalendarEvent({
+        title: title.trim(),
+        start,
+        end,
+      });
+      googleId = created.id || null;
+      htmlLink = created.htmlLink || null;
+      console.log("✅ Created event in Google Calendar", created);
+    } catch (err) {
+      console.error("❌ Failed to create Google Calendar event:", err);
+      // still add locally even if Google fails
+    }
+
+    const newEvent = {
+      title: title.trim(),
+      start,
+      end,
+      location: "",
+      description: "",
+      url: htmlLink, // use Google event link when we have it
+      googleId,
+    };
+
+    // 2) Update local state so it shows immediately in your UI
+    setEvents((prev) => [...prev, newEvent]);
+    setSelectedEvents((prev) => [...prev, newEvent]);
+  };
+
+  // 🔹 called from DayDetailOverlay when user removes an event
+  const handleRemoveEventFromOverlay = async (eventToRemove) => {
+    // Remove from the selected-day list
+    setSelectedEvents((prev) => prev.filter((evt) => evt !== eventToRemove));
+
+    // Remove from the global events list
+    setEvents((prev) => prev.filter((evt) => evt !== eventToRemove));
+
+    // If this event has a Google ID, try deleting it from Google Calendar too
+    if (eventToRemove.googleId) {
+      try {
+        await deleteGoogleCalendarEvent({ eventId: eventToRemove.googleId });
+        console.log("🗑️ Deleted event from Google Calendar");
+      } catch (err) {
+        console.error("❌ Failed to delete Google Calendar event:", err);
+      }
+    }
+  };
+
   return (
     <div className="card calendar-card">
       <div className="calendar-body">
@@ -119,13 +219,13 @@ export default function CalendarPanel() {
           dateClick={handleDateClick}
           headerToolbar={{
             left: "title",
-            center: "currentTime",        // ⬅ time in the middle
+            center: "currentTime",
             right: "today prev,next",
           }}
           customButtons={{
             currentTime: {
-              text: currentTime,          // ⬅ live time text
-              click: () => {},            // no-op, just display
+              text: currentTime,
+              click: () => {},
             },
           }}
         />
@@ -136,7 +236,10 @@ export default function CalendarPanel() {
         date={selectedDate}
         events={selectedEvents}
         onClose={() => setOverlayVisible(false)}
+        onAddEvent={handleAddEventFromOverlay}
+        onRemoveEvent={handleRemoveEventFromOverlay}
       />
     </div>
   );
 }
+
