@@ -17,18 +17,20 @@ export default function App() {
   const [currentTime, setCurrentTime] = useState("");
   const [currentDate, setCurrentDate] = useState("");
 
+  // 💤 idle timeout in ms (change this if you want)
+  const IDLE_TIMEOUT = 5 * 60 * 1000; // 60 seconds
+
+  // ⏱ Keep updating time + date
   useEffect(() => {
     const updateClock = () => {
       const now = new Date();
 
-      // Format time
       const timeStr = now.toLocaleTimeString([], {
         hour: "2-digit",
         minute: "2-digit",
         second: "2-digit",
       });
 
-      // Format date
       const dateStr = now.toLocaleDateString("en-US", {
         weekday: "long",
         year: "numeric",
@@ -41,10 +43,43 @@ export default function App() {
     };
 
     updateClock(); // run immediately
-    const interval = setInterval(updateClock, 1000);
+    const intervalId = setInterval(updateClock, 1000);
 
-    return () => clearInterval(interval);
+    return () => clearInterval(intervalId);
   }, []);
+
+  // 💤 Idle detection: show clock after no activity
+  useEffect(() => {
+    let idleTimerId;
+
+    const resetIdleTimer = () => {
+      // Whenever there is user activity, close the clock if it's open
+      // and restart the idle countdown.
+      if (idleTimerId) clearTimeout(idleTimerId);
+
+      idleTimerId = setTimeout(() => {
+        setIsClockOpen(true); // open clock after idle
+      }, IDLE_TIMEOUT);
+    };
+
+    // List of events that count as "activity"
+    const events = ["mousemove", "mousedown", "keydown", "touchstart", "scroll"];
+
+    events.forEach((evt) => window.addEventListener(evt, resetIdleTimer));
+
+    // Start the first timer
+    resetIdleTimer();
+
+    return () => {
+      if (idleTimerId) clearTimeout(idleTimerId);
+      events.forEach((evt) =>
+        window.removeEventListener(evt, resetIdleTimer)
+      );
+    };
+  }, [IDLE_TIMEOUT]);
+
+  // When clock closes (user taps/clicks), just set isClockOpen false.
+  // The idle effect will automatically restart the timer on the next activity.
 
   return (
     <div className="App">
@@ -52,6 +87,7 @@ export default function App() {
         <div className="bottom-row">
           {/* LEFT: Big Calendar */}
           <div className="main-column">
+            {/* You can still manually open the clock from the calendar if you want */}
             <CalendarPanel onClockClick={() => setIsClockOpen(true)} />
           </div>
 
@@ -68,7 +104,7 @@ export default function App() {
         <ForecastOverlay onClose={() => setIsForecastOpen(false)} />
       )}
 
-      {/* ⏰ Clock Overlay */}
+      {/* ⏰ Clock Overlay (screensaver style) */}
       {isClockOpen && (
         <ClockOverlay
           time={currentTime}

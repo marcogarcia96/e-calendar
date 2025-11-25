@@ -4,6 +4,7 @@
   "version": "0.1.0",
   "private": true,
   "main": "electron.js",
+
   "dependencies": {
     "@fullcalendar/daygrid": "^6.1.19",
     "@fullcalendar/interaction": "^6.1.19",
@@ -22,36 +23,66 @@
     "react-scripts": "5.0.1",
     "web-vitals": "^2.1.4"
   },
+
+  "devDependencies": {
+    "concurrently": "^9.2.1",
+    "electron": "^38.1.2",
+    "electron-builder": "^25.0.0",
+    "electron-rebuild": "^3.2.9",
+    "wait-on": "^9.0.0"
+  },
+
   "scripts": {
     "start": "BROWSER=none react-scripts start",
     "build": "react-scripts build",
-    "test": "react-scripts test",
-    "eject": "react-scripts eject",
     "electron": "concurrently \"npm start\" \"wait-on http://localhost:3000 && electron .\"",
+    "dist": "npm run build && electron-builder",
     "postinstall": "electron-rebuild -f -w better-sqlite3"
   },
-  "eslintConfig": {
-    "extends": [
-      "react-app",
-      "react-app/jest"
-    ]
-  },
-  "browserslist": {
-    "production": [
-      ">0.2%",
-      "not dead",
-      "not op_mini all"
+
+  "build": {
+    "appId": "com.marcogarcia.ecalendar",
+    "productName": "E-Calendar",
+
+    "files": [
+      "build/**/*",
+      "electron.js",
+      "preload.js",
+      "node_modules/**/*",
+      "package.json"
     ],
+
+    "directories": {
+      "buildResources": "assets"
+    },
+
+    "mac": {
+      "target": ["dmg", "zip"],
+      "icon": "assets/icons/pi-calendar.png"
+    },
+
+    "win": {
+      "target": "nsis",
+      "icon": "assets/icons/pi-calendar.png"
+    },
+
+    "linux": {
+      "target": ["AppImage", "deb"],
+      "icon": "assets/icons"
+    }
+  },
+
+  "eslintConfig": {
+    "extends": ["react-app", "react-app/jest"]
+  },
+
+  "browserslist": {
+    "production": [">0.2%", "not dead", "not op_mini all"],
     "development": [
       "last 1 chrome version",
       "last 1 firefox version",
       "last 1 safari version"
     ]
-  },
-  "devDependencies": {
-    "concurrently": "^9.2.1",
-    "electron": "^38.1.2",
-    "electron-rebuild": "^3.2.9",
-    "wait-on": "^9.0.0"
   }
 }
+

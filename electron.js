@@ -1,18 +1,17 @@
 // electron.js
 const { app, BrowserWindow, ipcMain } = require("electron");
 const path = require("path");
-const Database = require("better-sqlite3");   // ✅ SQLite
+const Database = require("better-sqlite3");
 
-// ✅ Node-fetch for ICS (Node doesn't have fetch by default in some environments)
+// Node-fetch fallback
 const fetch = (...args) =>
   import("node-fetch").then(({ default: fetch }) => fetch(...args));
 
 let mainWindow;
-let db;  // ✅ will hold our SQLite connection
+let db;
 
 /**
- * Initialize local SQLite database in app's userData folder.
- * This file (notes.db) persists across restarts and power loss.
+ * Initialize local SQLite database
  */
 function initDatabase() {
   const dbPath = path.join(app.getPath("userData"), "notes.db");
@@ -30,44 +29,41 @@ function initDatabase() {
 }
 
 /**
- * Create main fullscreen window.
+ * Create main fullscreen window
  */
 function createWindow() {
+  const iconPath = path.join(__dirname, "assets", "icons", "pi-calendar.png"); // ✅ ADD THIS
+
   mainWindow = new BrowserWindow({
     title: "E-Calendar",
     width: 1200,
     height: 800,
-    fullscreen: true, // you already had this
+    fullscreen: true,
     autoHideMenuBar: true,
+
+    // ✅ Raspberry Pi / Linux / Windows / macOS icon support
+    icon: iconPath,
+
     webPreferences: {
       contextIsolation: true,
-      sandbox: false,            // ✅ as you had
+      sandbox: false,
       nodeIntegration: false,
       enableRemoteModule: true,
-      preload: path.join(__dirname, "preload.js"), // ✅ window.electronAPI / window.notesAPI, etc.
-    },
+      preload: path.join(__dirname, "preload.js"),
+    }
   });
 
-  // ✅ load React dev server
   mainWindow.loadURL("http://localhost:3000");
-
-  // mainWindow.webContents.openDevTools(); // optional
 }
 
 /**
- * ✅ CORS-free ICS fetch via main process (unchanged)
+ * ICS fetch (CORS-free)
  */
 ipcMain.handle("fetch-ics", async (_event, url) => {
   try {
-    if (!url || typeof url !== "string") {
-      throw new Error("Invalid ICS URL");
-    }
-
     const res = await fetch(url);
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
-
-    const text = await res.text();
-    return text;
+    return await res.text();
   } catch (err) {
     console.error("❌ Error fetching ICS:", err);
     throw err;
@@ -75,52 +71,38 @@ ipcMain.handle("fetch-ics", async (_event, url) => {
 });
 
 /**
- * ✅ NOTES IPC HANDLERS (backed by SQLite)
+ * Notes API
  */
-
-// list titles for dashboard
 ipcMain.handle("notes:list", () => {
-  const stmt = db.prepare(
+  return db.prepare(
     "SELECT id, title, updated_at FROM notes ORDER BY updated_at DESC"
-  );
-  return stmt.all();
+  ).all();
 });
 
-// get full note (title + body)
 ipcMain.handle("notes:get", (_event, id) => {
-  const stmt = db.prepare("SELECT * FROM notes WHERE id = ?");
-  return stmt.get(id);
+  return db.prepare("SELECT * FROM notes WHERE id = ?").get(id);
 });
 
-// create or update note
 ipcMain.handle("notes:save", (_event, note) => {
-  const safeTitle = note.title && note.title.trim() ? note.title.trim() : "Untitled note";
-  const safeBody = note.body || "";
+  const title = note.title?.trim() || "Untitled note";
+  const body = note.body || "";
 
   if (note.id) {
-    // update existing
-    const stmt = db.prepare(`
-      UPDATE notes
-      SET title = ?, body = ?, updated_at = CURRENT_TIMESTAMP
-      WHERE id = ?
-    `);
-    stmt.run(safeTitle, safeBody, note.id);
+    db.prepare(`
+      UPDATE notes SET title=?, body=?, updated_at=CURRENT_TIMESTAMP WHERE id=?
+    `).run(title, body, note.id);
     return note.id;
-  } else {
-    // insert new
-    const stmt = db.prepare(`
-      INSERT INTO notes (title, body)
-      VALUES (?, ?)
-    `);
-    const info = stmt.run(safeTitle, safeBody);
-    return info.lastInsertRowid;
   }
+
+  const info = db.prepare(
+    "INSERT INTO notes (title, body) VALUES (?, ?)"
+  ).run(title, body);
+
+  return info.lastInsertRowid;
 });
 
-// delete note
 ipcMain.handle("notes:delete", (_event, id) => {
-  const stmt = db.prepare("DELETE FROM notes WHERE id = ?");
-  stmt.run(id);
+  db.prepare("DELETE FROM notes WHERE id=?").run(id);
   return true;
 });
 
@@ -128,16 +110,14 @@ ipcMain.handle("notes:delete", (_event, id) => {
  * App lifecycle
  */
 app.whenReady().then(() => {
-  initDatabase();   // ✅ make sure DB exists
-  createWindow();   // ✅ then open window
+  initDatabase();
+  createWindow();
 });
 
-// ✅ re-create window if clicked on dock icon (Mac behavior)
 app.on("activate", () => {
   if (BrowserWindow.getAllWindows().length === 0) createWindow();
 });
 
-// ✅ fully quit app on close (except on Mac)
 app.on("window-all-closed", () => {
   if (process.platform !== "darwin") app.quit();
 });
