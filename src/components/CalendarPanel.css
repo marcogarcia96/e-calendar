@@ -136,13 +136,14 @@
   background: transparent !important;
   border: none !important;
   box-shadow: none !important;
-  cursor: default;
-  pointer-events: none;
+
+  cursor: pointer !important;   /* 👈 make it clickable */
+  pointer-events: auto !important;
 
   font-size: 1.3rem;
   font-weight: 600;
   color: #ffffff;
-  padding: 0;
+  padding: 0 4px;
   margin: 0 10px;
 }
 

@@ -1,0 +1,43 @@
+/* src/components/ClockOverlay.css */
+
+/* Fullscreen black overlay */
+.clock-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+
+  background-color: #2a2630;      /* FULL opacity black (no RGBA) */
+  opacity: 1 !important;       /* force full opacity */
+  z-index: 999999;             /* above everything */
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  cursor: pointer;
+  isolation: isolate;          /* prevents parent transparency bleed */
+}
+/* Center container */
+.clock-modal {
+  background: none;
+  text-align: center;
+}
+
+/* Time text */
+.clock-time {
+  font-size: 6rem;
+  font-weight: 700;
+  color: white;
+  user-select: none;
+}
+
+/* Date below time */
+.clock-date {
+  margin-top: 20px;
+  font-size: 1.8rem;
+  font-weight: 300;
+  color: white;
+  user-select: none;
+}

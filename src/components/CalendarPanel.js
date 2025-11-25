@@ -13,7 +13,7 @@ import {
   deleteGoogleCalendarEvent,
 } from "../googleCalendarClient";
 
-export default function CalendarPanel() {
+export default function CalendarPanel({ onClockClick }) {
   const [events, setEvents] = useState([]);
 
   const [overlayVisible, setOverlayVisible] = useState(false);
@@ -245,7 +245,6 @@ export default function CalendarPanel() {
           fixedWeekCount={true}
           dayMaxEventRows={true}
           dayMaxEvents={3}
-          
           dateClick={handleDateClick}
           eventClick={handleEventClick}
           headerToolbar={{
@@ -256,7 +255,10 @@ export default function CalendarPanel() {
           customButtons={{
             currentTime: {
               text: currentTime,
-              click: () => {},
+              click: () => {
+                // 👇 THIS is what should open the clock overlay
+                if (onClockClick) onClockClick();
+              },
             },
           }}
         />
@@ -273,3 +275,6 @@ export default function CalendarPanel() {
     </div>
   );
 }
+
+
+
