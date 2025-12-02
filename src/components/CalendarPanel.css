@@ -71,7 +71,7 @@
 /* --------------------------- */
 
 .fc-daygrid-event {
-  background: #4b8dd8 !important;
+  background: #0057ba !important;
   border-radius: 12px !important;
   border: none !important;
   color: #fff !important;
@@ -89,11 +89,7 @@
 
 /* circle dot inside event pills */
 .fc-daygrid-event-dot {
-  width: 7px !important;
-  height: 7px !important;
-  border-radius: 50% !important;
-  background: rgba(255, 255, 255, 0.7) !important;
-  margin-right: 6px !important;
+ 
 }
 
 /* --------------------------------------------- */

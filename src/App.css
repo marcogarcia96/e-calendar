@@ -247,14 +247,14 @@ body {
   border-radius: 999px;
   padding: 2px 10px;
 
-  background: #2a2630;
+  background: #0057ba;
   cursor: pointer;
-  font-weight: 520;
+  font-weight: 420;
   font-size: 0.85rem;
   color: #ffffff;
 
   /* kill the weird edges */
-  border: 1px solid var(--fc-border-color);
+  border: 0px solid var(--fc-border-color);
   outline: none;
   box-shadow: none;
 
